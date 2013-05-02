@@ -218,7 +218,11 @@ module Kramdown
           ''
         elsif !el.attr['src'].empty?
           @data[:packages] << 'graphicx'
-          "#{latex_link_target(el)}\\includegraphics{#{el.attr['src']}}"
+          if el.attr['center']
+            "#{latex_link_target(el)}\\begin{center}\\includegraphics{#{el.attr['src']}}\\end{center}"
+          else
+            "#{latex_link_target(el)}\\includegraphics{#{el.attr['src']}}"
+          end
         else
           warning("Cannot include image with empty path")
           ''
