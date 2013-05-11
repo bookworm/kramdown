@@ -197,6 +197,11 @@ module Kramdown
         el.value.split(/\n/).map {|l| "% #{l}"}.join("\n") + "\n"
       end
 
+      def convert_tcolorbox(el, opts)
+        @data[:packages] << 'tcolorbox' unless @data[:packages].include?('tcolorbox') # Add the package
+        "\\begin{tcolorbox} #{::Kramdown::Document.new(el.value).to_latex} \\end{tcolorbox}"
+      end
+
       def convert_br(el, opts)
         res = "\\newline"
         res << "\n" if (c = opts[:parent].children[opts[:index]+1]) && (c.type != :text || c.value !~ /^\s*\n/)
