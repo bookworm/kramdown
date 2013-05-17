@@ -119,7 +119,8 @@ module Kramdown
           @tree.children << Element.new(:eob, :extension) if type == :block
           true
         else
-          false
+          @tree.children << Element.new(name.to_sym, body, nil, :category => type) if body.kind_of?(String)
+          true
         end
       end
 
