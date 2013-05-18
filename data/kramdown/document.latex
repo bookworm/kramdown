@@ -38,6 +38,8 @@ encmap = {
 
 \hypersetup{colorlinks=true,urlcolor=blue}
 
+\usepackage[parfill]{parskip}
+
 \begin{document}
 <%= @body %>
 \end{document}
