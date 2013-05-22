@@ -149,6 +149,9 @@ module Kramdown
           "\\emph{#{inner(el, opts)}}"
         elsif el.value == 'b'
           "\\emph{#{inner(el, opts)}}"
+        elsif el.value == 'kbd'
+          @data[:packages] << 'menukeys' unless @data[:packages].include?('menukeys') # Add the package
+          "\\keys{#{inner(el, opts)}}"
         else
           warning("Can't convert HTML element")
           ''
