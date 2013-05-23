@@ -49,8 +49,15 @@ module Kramdown
 
       # Dispatch the conversion of the element +el+ to a +convert_TYPE+ method using the +type+ of
       # the element.
+      #
+      # Will return an empty string if the class 'hide' is present
       def convert(el, opts = {})
-        send("convert_#{el.type}", el, opts)
+        hide = el.attr['class'].to_s =~ /\bhide\b/
+        if hide
+          ''
+        else
+          send("convert_#{el.type}", el, opts) 
+        end
       end
 
       # Return the converted content of the children of +el+ as a string.
