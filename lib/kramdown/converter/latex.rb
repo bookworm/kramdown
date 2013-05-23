@@ -28,15 +28,7 @@ module Kramdown
     # The return value of such a method has to be a string containing the element +el+ formatted
     # correctly as LaTeX markup.
     class Latex < Base
-
-      codeblock_lang_to_listings = {
-        :ruby => 'Ruby',
-        :sh   => 'bash',
-        :text => 'Clean',
-        :tex  => 'TeX',
-        :js   => 'VBScript',
-        :json => 'VBScript'
-      }
+      attr_accessor :codeblock_lang_to_listings
 
       # Initialize the LaTeX converter with the +root+ element and the conversion +options+.
       def initialize(root, options)
@@ -44,6 +36,15 @@ module Kramdown
         #TODO: set the footnote counter at the beginning of the document
         @options[:footnote_nr]
         @data[:packages] = Set.new
+
+        @codeblock_lang_to_listings = {
+          :ruby => 'Ruby',
+          :sh   => 'bash',
+          :text => 'Clean',
+          :tex  => 'TeX',
+          :js   => 'VBScript',
+          :json => 'VBScript'
+        }
       end
 
       # Dispatch the conversion of the element +el+ to a +convert_TYPE+ method using the +type+ of
@@ -94,7 +95,8 @@ module Kramdown
       def convert_codeblock(el, opts)
         show_whitespace = el.attr['class'].to_s =~ /\bshow-whitespaces\b/
         lang = extract_code_language(el.attr)
-        lang = @codeblock_lang_to_listings.include?(lang.to_sym) ? @codeblock_lang_to_listings[lang.to_sym] : 'Clean'
+        lang = 'Clean' unless lang
+        lang =  @codeblock_lang_to_listings[lang.to_sym] if @codeblock_lang_to_listings.include?(lang.to_sym)
 
         if show_whitespace || lang
           options = []
