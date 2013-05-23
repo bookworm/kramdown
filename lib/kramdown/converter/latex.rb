@@ -29,6 +29,15 @@ module Kramdown
     # correctly as LaTeX markup.
     class Latex < Base
 
+      codeblock_lang_to_listings = {
+        :ruby => 'Ruby',
+        :sh   => 'bash',
+        :text => 'Clean',
+        :tex  => 'TeX',
+        :js   => 'VBScript',
+        :json => 'VBScript'
+      }
+
       # Initialize the LaTeX converter with the +root+ element and the conversion +options+.
       def initialize(root, options)
         super
@@ -85,6 +94,8 @@ module Kramdown
       def convert_codeblock(el, opts)
         show_whitespace = el.attr['class'].to_s =~ /\bshow-whitespaces\b/
         lang = extract_code_language(el.attr)
+        lang = @codeblock_lang_to_listings.include?(lang.to_sym) ? @codeblock_lang_to_listings[lang.to_sym] : 'Clean'
+
         if show_whitespace || lang
           options = []
           options << "showspaces=%s,showtabs=%s" % (show_whitespace ? ['true', 'true'] : ['false', 'false'])
