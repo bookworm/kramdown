@@ -103,7 +103,12 @@ module Kramdown
         show_whitespace = el.attr['class'].to_s =~ /\bshow-whitespaces\b/
         lang = extract_code_language(el.attr)
         lang = 'Clean' unless lang
-        lang =  @codeblock_lang_to_listings[lang.to_sym] if @codeblock_lang_to_listings.include?(lang.to_sym)
+
+        if @codeblock_lang_to_listings.include?(lang.to_sym)
+          lang =  @codeblock_lang_to_listings[lang.to_sym] 
+        else
+          lang = 'Clean'
+        end
 
         if show_whitespace || lang
           options = []
