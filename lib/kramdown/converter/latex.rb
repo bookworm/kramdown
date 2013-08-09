@@ -67,7 +67,12 @@ module Kramdown
         el.children.each_with_index do |inner_el, index|
           options[:index] = index
           options[:result] = result
-          result << send("convert_#{inner_el.type}", inner_el, options)
+          hide = inner_el.attr['class'].to_s =~ /\bhide\b/
+          if hide
+            result << ''
+          else
+            result << send("convert_#{inner_el.type}", inner_el, options)
+          end        
         end
         result
       end
@@ -201,6 +206,32 @@ module Kramdown
         "#{latex_link_target(el)}\\begin{longtable}{|#{align}|}#{attrs}\n\\hline\n#{inner(el, opts)}\\hline\n\\end{longtable}#{attrs}\n\n"
       end
 
+      def convert_aside(el, opts)
+        @data[:packages] << 'fancybox' unless @data[:packages].include?('fancybox') # Add the package
+        result = <<-eos
+          \vspace{5 mm}
+          \noindent
+          \fbox{%
+          \begin{minipage}{\textwidth}
+        eos
+
+        result << inner(el, opts)
+
+        result << <<-eos
+          \end{minipage}}
+          \vspace{5 mm}
+        eos
+      end
+
+      def convert_infoblock(el, opts)
+        @data[:packages] << 'notes' unless @data[:packages].include?('notes') # Add the package
+        result = '\\begin{informationnote}'
+
+        result << inner(el, opts)
+
+        result << '\\end{informationnote}'
+      end
+
       def convert_thead(el, opts)
         "#{inner(el, opts)}\\hline\n"
       end
@@ -227,7 +258,7 @@ module Kramdown
 
       def convert_tcolorbox(el, opts)
         @data[:packages] << 'tcolorbox' unless @data[:packages].include?('tcolorbox') # Add the package
-        "\\begin{tcolorbox} #{::Kramdown::Document.new(el.value).to_latex} \\end{tcolorbox}"
+        "\\begin{tcolorbox} inner(el, opts) \\end{tcolorbox}"
       end
 
       def convert_br(el, opts)
