@@ -18,6 +18,13 @@ PKG_FILES = FileList.new([
                           'test/**/*'
                          ])
 
+
+SUMMARY = 'kramdown is a fast, pure-Ruby Markdown-superset converter.'
+DESCRIPTION = <<EOF
+kramdown is yet-another-markdown-parser but fast, pure Ruby,
+using a strict syntax definition and supporting several common extensions.
+EOF
+
 Gem::Specification.new do |s|
   #### Basic information
   s.name = 'kramdown'
