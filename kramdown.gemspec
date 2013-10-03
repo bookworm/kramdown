@@ -1,5 +1,22 @@
 #!/usr/bin/env gem build
 # encoding: utf-8
+$:.push File.expand_path("lib", __FILE__)
+require File.expand_path("lib/kramdown/version.rb", __FILE__)
+require 'rake'
+
+PKG_FILES = FileList.new([
+                          'Rakefile',
+                          'setup.rb',
+                          'COPYING', 'README.md', 'AUTHORS',
+                          'VERSION', 'CONTRIBUTERS',
+                          'bin/*',
+                          'benchmark/*',
+                          'lib/**/*.rb',
+                          'man/man1/kramdown.1',
+                          'data/**/*',
+                          'doc/**',
+                          'test/**/*'
+                         ])
 
 Gem::Specification.new do |s|
   #### Basic information
