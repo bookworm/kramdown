@@ -318,7 +318,7 @@ module Kramdown
       require 'kramdown/parser/kramdown/smart_quotes'
       require 'kramdown/parser/kramdown/math'
       require 'kramdown/parser/kramdown/abbreviation'
-
+      require 'kramdown/parser/kramdown/textblock'
     end
 
   end
