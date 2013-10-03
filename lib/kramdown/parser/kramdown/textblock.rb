@@ -1,12 +1,14 @@
 require 'kramdown/parser/kramdown/blank_line'
 require 'kramdown/parser/kramdown/extensions'
 require 'kramdown/parser/kramdown/eob'
+require 'kramdown/parser/kramdown/list'
+require 'kramdown/parser/kramdown/html'
 
 module Kramdown
   module Parser
     class Kramdown
 
-      TEXTBLOCK_START = /^#{OPT_SPACE}([WTEIQDX])> ?/
+      TEXTBLOCK_START = /^^#{OPT_SPACE}([WTEUQDX])> ?/
       TEXTBLOCK_TYPES = {
         "W" => "warning",
         "T" => "tip",

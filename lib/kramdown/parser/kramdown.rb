@@ -75,7 +75,7 @@ module Kramdown
         @block_parsers = [:blank_line, :codeblock, :codeblock_fenced, :blockquote, :atx_header,
                           :horizontal_rule, :list, :definition_list, :block_html, :setext_header,
                           :table, :footnote_definition, :link_definition, :abbrev_definition,
-                          :block_extensions, :block_math, :eob_marker, :paragraph]
+                          :block_extensions, :block_math, :eob_marker, :textblock, :aside, :paragraph]
         @span_parsers =  [:emphasis, :codespan, :autolink, :span_html, :footnote_marker, :link, :smart_quotes, :inline_math,
                          :span_extensions, :html_entity, :typographic_syms, :line_break, :escaped_chars]
 
@@ -295,6 +295,7 @@ module Kramdown
       # Regexp for matching the optional space (zero or up to three spaces)
       OPT_SPACE = / {0,3}/
 
+      require 'kramdown/parser/kramdown/aside'
       require 'kramdown/parser/kramdown/blank_line'
       require 'kramdown/parser/kramdown/eob'
       require 'kramdown/parser/kramdown/paragraph'
@@ -302,6 +303,7 @@ module Kramdown
       require 'kramdown/parser/kramdown/blockquote'
       require 'kramdown/parser/kramdown/table'
       require 'kramdown/parser/kramdown/codeblock'
+      require 'kramdown/parser/kramdown/textblock'
       require 'kramdown/parser/kramdown/horizontal_rule'
       require 'kramdown/parser/kramdown/list'
       require 'kramdown/parser/kramdown/link'
@@ -318,9 +320,6 @@ module Kramdown
       require 'kramdown/parser/kramdown/smart_quotes'
       require 'kramdown/parser/kramdown/math'
       require 'kramdown/parser/kramdown/abbreviation'
-      require 'kramdown/parser/kramdown/textblock'
     end
-
   end
-
 end
