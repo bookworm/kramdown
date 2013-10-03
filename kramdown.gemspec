@@ -8,11 +8,9 @@ PKG_FILES = FileList.new([
                           'Rakefile',
                           'setup.rb',
                           'COPYING', 'README.md', 'AUTHORS',
-                          'VERSION', 'CONTRIBUTERS',
                           'bin/*',
                           'benchmark/*',
                           'lib/**/*.rb',
-                          'man/man1/kramdown.1',
                           'data/**/*',
                           'doc/**',
                           'test/**/*'
