@@ -7,14 +7,14 @@
 #++
 #
 
-require 'test/unit'
+require 'minitest/autorun'
 require 'kramdown'
 require 'yaml'
 require 'tmpdir'
 
 Encoding.default_external = 'utf-8' if RUBY_VERSION >= '1.9'
 
-class TestFiles < Test::Unit::TestCase
+class TestFiles < Minitest::Test
 
   EXCLUDE_KD_FILES = [('test/testcases/block/04_header/with_auto_ids.text' if RUBY_VERSION <= '1.8.6'), # bc of dep stringex not working
                      ].compact
@@ -90,14 +90,16 @@ class TestFiles < Test::Unit::TestCase
       next if EXCLUDE_LATEX_FILES.any? {|f| text_file =~ /#{f}$/}
       define_method('test_' + text_file.tr('.', '_') + "_to_latex_compilation") do
         latex =  Kramdown::Document.new(File.read(text_file),
-                                                          :auto_ids => false, :footnote_nr => 1,
-                                                          :template => 'document').to_latex
-        result = IO.popen("latex -output-directory='#{Dir.tmpdir}' 2>/dev/null", 'r+') do |io|
-          io.write(latex)
-          io.close_write
-          io.read
+                                        :auto_ids => false, :footnote_nr => 1,
+                                        :template => 'document').to_latex
+        Dir.mktmpdir do |tmpdir|
+          result = IO.popen("latex -output-directory='#{tmpdir}' 2>/dev/null", 'r+') do |io|
+            io.write(latex)
+            io.close_write
+            io.read
+          end
+          assert($?.exitstatus == 0, result.scan(/^!(.*\n.*)/).join("\n"))
         end
-        assert($?.exitstatus == 0, result.scan(/^!(.*\n.*)/).join("\n"))
       end
     end
   end
@@ -169,6 +171,80 @@ class TestFiles < Test::Unit::TestCase
     end
   end
 
+  EXCLUDE_GFM_FILES = [
+    'test/testcases/block/03_paragraph/no_newline_at_end.text',
+    'test/testcases/block/03_paragraph/indented.text',
+    'test/testcases/block/03_paragraph/two_para.text',
+    'test/testcases/block/04_header/atx_header.text',
+    'test/testcases/block/04_header/setext_header.text',
+    'test/testcases/block/05_blockquote/indented.text',
+    'test/testcases/block/05_blockquote/lazy.text',
+    'test/testcases/block/05_blockquote/nested.text',
+    'test/testcases/block/05_blockquote/no_newline_at_end.text',
+    'test/testcases/block/06_codeblock/error.text',
+    'test/testcases/block/07_horizontal_rule/error.text',
+    'test/testcases/block/08_list/escaping.text',
+    'test/testcases/block/08_list/item_ial.text',
+    'test/testcases/block/08_list/lazy.text',
+    'test/testcases/block/08_list/list_and_others.text',
+    'test/testcases/block/08_list/other_first_element.text',
+    'test/testcases/block/08_list/simple_ul.text',
+    'test/testcases/block/08_list/special_cases.text',
+    'test/testcases/block/09_html/comment.text',
+    'test/testcases/block/09_html/html_to_native/code.text',
+    'test/testcases/block/09_html/html_to_native/emphasis.text',
+    'test/testcases/block/09_html/html_to_native/typography.text',
+    'test/testcases/block/09_html/parse_as_raw.text',
+    'test/testcases/block/09_html/simple.text',
+    'test/testcases/block/12_extension/comment.text',
+    'test/testcases/block/12_extension/ignored.text',
+    'test/testcases/block/12_extension/nomarkdown.text',
+    'test/testcases/block/13_definition_list/item_ial.text',
+    'test/testcases/block/13_definition_list/multiple_terms.text',
+    'test/testcases/block/13_definition_list/no_def_list.text',
+    'test/testcases/block/13_definition_list/simple.text',
+    'test/testcases/block/13_definition_list/with_blocks.text',
+    'test/testcases/block/14_table/errors.text',
+    'test/testcases/block/14_table/escaping.text',
+    'test/testcases/block/14_table/simple.text',
+    'test/testcases/block/15_math/normal.text',
+    'test/testcases/encoding.text',
+    'test/testcases/span/01_link/inline.text',
+    'test/testcases/span/01_link/link_defs.text',
+    'test/testcases/span/01_link/reference.text',
+    'test/testcases/span/02_emphasis/normal.text',
+    'test/testcases/span/03_codespan/normal.text',
+    'test/testcases/span/04_footnote/definitions.text',
+    'test/testcases/span/04_footnote/markers.text',
+    'test/testcases/span/05_html/across_lines.text',
+    'test/testcases/span/05_html/markdown_attr.text',
+    'test/testcases/span/05_html/normal.text',
+    'test/testcases/span/autolinks/url_links.text',
+    'test/testcases/span/extension/comment.text',
+    'test/testcases/span/ial/simple.text',
+    'test/testcases/span/line_breaks/normal.text',
+    'test/testcases/span/text_substitutions/entities_as_char.text',
+    'test/testcases/span/text_substitutions/entities.text',
+    'test/testcases/span/text_substitutions/typography.text'
+  ]
+
+  # Generate test methods for gfm-to-html conversion
+  Dir[File.dirname(__FILE__) + '/{testcases,testcases_gfm}/**/*.text'].each do |text_file|
+    next if EXCLUDE_GFM_FILES.any? {|f| text_file =~ /#{f}$/}
+    basename = text_file.sub(/\.text$/, '')
+
+    html_file = [(".html.19" if RUBY_VERSION >= '1.9'), ".html"].compact.
+      map {|ext| basename + ext }.
+      detect {|file| File.exist?(file) }
+
+    define_method('test_gfm_' + text_file.tr('.', '_') + "_to_html") do
+      opts_file = basename + '.options'
+      opts_file = File.join(File.dirname(html_file), 'options') if !File.exist?(opts_file)
+      options = File.exist?(opts_file) ? YAML::load(File.read(opts_file)) : {:auto_ids => false, :footnote_nr => 1}
+      doc = Kramdown::Document.new(File.read(text_file), options.merge(:input => 'GFM'))
+      assert_equal(File.read(html_file), doc.to_html)
+    end
+  end
 
 
   # Generate test methods for asserting that converters don't modify the document tree.

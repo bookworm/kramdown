@@ -59,13 +59,33 @@ module Kramdown
       end
       private_class_method(:new, :allocate)
 
+      # Returns whether the template should be applied before the conversion of the tree.
+      #
+      # Defaults to false.
+      def apply_template_before?
+        false
+      end
+
+      # Returns whether the template should be applied ater the conversion of the tree.
+      #
+      # Defaults to true.
+      def apply_template_after?
+        true
+      end
+
       # Convert the element tree +tree+ and return the resulting conversion object (normally a
       # string) and an array with warning messages. The parameter +options+ specifies the conversion
       # options that should be used.
       #
       # Initializes a new instance of the calling class and then calls the #convert method with
-      # +tree+ as parameter. If the +template+ option is specified and non-empty, the result is
-      # rendered into the specified template. The template resolution is done in the following way:
+      # +tree+ as parameter.
+      #
+      # If the +template+ option is specified and non-empty, the template is evaluate with ERB
+      # before and/or after the tree conversion depending on the result of #apply_template_before?
+      # and #apply_template_after?. If the template is evaluated before, an empty string is used for
+      # the body; if evaluated after, the result is used as body. See ::apply_template.
+      #
+      # The template resolution is done in the following way:
       #
       # 1. Look in the current working directory for the template.
       #
@@ -74,11 +94,17 @@ module Kramdown
       #
       # 3. Append +.convertername+ to the template name and look for it in the kramdown data
       #    directory.
+      #
+      # 4. Check if the template name starts with 'string://' and if so, strip this prefix away and
+      #    use the rest as template.
       def self.convert(tree, options = {})
         converter = new(tree, ::Kramdown::Options.merge(options.merge(tree.options[:options] || {})))
+
+        apply_template(converter, '') if !converter.options[:template].empty? && converter.apply_template_before?
         result = converter.convert(tree)
-        result = apply_template(converter, result) if !converter.options[:template].empty?
-        result.encode!(tree.options[:encoding]) if result.respond_to?(:encode!)
+        result.encode!(tree.options[:encoding]) if result.respond_to?(:encode!) && result.encoding != Encoding::BINARY
+        result = apply_template(converter, result) if !converter.options[:template].empty? && converter.apply_template_after?
+
         [result, converter.warnings]
       end
 
@@ -90,6 +116,9 @@ module Kramdown
       end
 
       # Apply the +template+ using +body+ as the body string.
+      #
+      # The template is evaluated using ERB and the body is available in the @body instance variable
+      # and the converter object in the @converter instance variable.
       def self.apply_template(converter, body) # :nodoc:
         erb = ERB.new(get_template(converter.options[:template]))
         obj = Object.new
@@ -108,6 +137,8 @@ module Kramdown
           File.read(template + format_ext)
         elsif File.exist?(shipped)
           File.read(shipped)
+        elsif template.start_with?('string://')
+          template.sub(/\Astring:\/\//, '')
         else
           raise "The specified template file #{template} does not exist"
         end

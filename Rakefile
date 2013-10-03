@@ -180,6 +180,7 @@ EOF
       s.require_path = 'lib'
       s.executables = ['kramdown']
       s.default_executable = 'kramdown'
+      s.add_development_dependency 'minitest', '~> 5.0'
       s.add_development_dependency 'coderay', '~> 1.0.0'
       s.add_development_dependency 'stringex', '~> 1.5.1'
 
@@ -218,7 +219,7 @@ EOF
       rf.configure
       rf.login
 
-      rf.userconfig["release_notes"] = REL_PAGE.blocks['content'].content
+      rf.userconfig["release_notes"] = REL_PAGE.blocks['content']
       rf.userconfig["preformatted"] = false
 
       files = %w[.gem .tgz .zip].collect {|ext| "pkg/kramdown-#{Kramdown::VERSION}" + ext}

@@ -79,8 +79,7 @@ module Kramdown
       temp = defaults
       hash.each do |k,v|
         k = k.to_sym
-        next unless @options.has_key?(k)
-        temp[k] = parse(k, v)
+        @options.has_key?(k) ? temp[k] = parse(k, v) : temp[k] = v
       end
       temp
     end
@@ -147,6 +146,7 @@ module Kramdown
 
     define(:template, String, '', <<EOF)
 The name of an ERB template file that should be used to wrap the output
+or the ERB template itself.
 
 This is used to wrap the output in an environment so that the output can
 be used as a stand-alone document. For example, an HTML template would
@@ -158,7 +158,9 @@ When resolving the template file, the given template name is used first.
 If such a file is not found, the converter extension is appended. If the
 file still cannot be found, the templates name is interpreted as a
 template name that is provided by kramdown (without the converter
-extension).
+extension). If the file is still not found, the template name is checked
+if it starts with 'string://' and if it does, this prefix is removed and
+the rest is used as template content.
 
 kramdown provides a default template named 'document' for each converter.
 
@@ -177,7 +179,7 @@ Used by: HTML/Latex converter
 EOF
 
     define(:auto_id_prefix, String, '', <<EOF)
-Prefix used for automatically generated heaer IDs
+Prefix used for automatically generated header IDs
 
 This option can be used to set a prefix for the automatically generated
 header IDs so that there is no conflict when rendering multiple kramdown

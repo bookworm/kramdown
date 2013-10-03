@@ -175,13 +175,13 @@ module Kramdown
       end
 
       def convert_html_element(el, opts)
-        if el.value == 'i'
-          "\\emph{#{inner(el, opts)}}"
-        elsif el.value == 'b'
+        if el.value == 'i' || el.value == 'em'
           "\\emph{#{inner(el, opts)}}"
         elsif el.value == 'kbd'
           @data[:packages] << 'menukeys' unless @data[:packages].include?('menukeys') # Add the package
           "\\keys{#{inner(el, opts)}}"
+        elsif el.value == 'b' || el.value == 'strong'
+          "\\textbf{#{inner(el, opts)}}"
         else
           warning("Can't convert HTML element")
           ''
@@ -270,9 +270,9 @@ module Kramdown
       def convert_a(el, opts)
         url = el.attr['href']
         if url =~ /^#/
-          "\\hyperlink{#{url[1..-1]}}{#{inner(el, opts)}}"
+          "\\hyperlink{#{escape(url[1..-1])}}{#{inner(el, opts)}}"
         else
-          "\\href{#{url}}{#{inner(el, opts)}}"
+          "\\href{#{escape(url)}}{#{inner(el, opts)}}"
         end
       end
 
@@ -472,7 +472,7 @@ module Kramdown
         402 => ['\textflorin', 'mathcomp'],
         381 => ['\v{Z}'],
         382 => ['\v{z}'],
-        160 => ['\nolinebreak'],
+        160 => ['~'],
         161 => ['\textexclamdown'],
         163 => ['\pounds'],
         164 => ['\currency', 'wasysym'],
@@ -613,7 +613,13 @@ module Kramdown
       end
 
       def convert_abbreviation(el, opts)
-        el.value
+        @data[:packages] += %w[acronym]
+        "\\ac{#{normalize_abbreviation_key(el.value)}}"
+      end
+
+      # Normalize the abbreviation key so that it only contains allowed ASCII character
+      def normalize_abbreviation_key(key)
+        key.gsub(/\W/) {|m| m.unpack('H*').first}
       end
 
       # Wrap the +text+ inside a LaTeX environment of type +type+. The element +el+ is passed on to

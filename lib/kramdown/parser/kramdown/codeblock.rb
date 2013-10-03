@@ -17,7 +17,7 @@ module Kramdown
     class Kramdown
 
       CODEBLOCK_START = INDENT
-      CODEBLOCK_MATCH = /(?:#{BLANK_LINE}?(?:#{INDENT}[ \t]*\S.*\n)+(?:(?!#{BLANK_LINE} {0,3}\S|#{IAL_BLOCK_START}|#{EOB_MARKER}|^#{OPT_SPACE}#{LAZY_END_HTML_STOP}|^#{OPT_SPACE}#{LAZY_END_HTML_START})^[ \t]*\S.*\n)*)*/
+      CODEBLOCK_MATCH = /(?:#{BLANK_LINE}?(?:#{INDENT}[ \t]*\S.*\n)+(?:(?!#{IAL_BLOCK_START}|#{EOB_MARKER}|^#{OPT_SPACE}#{LAZY_END_HTML_STOP}|^#{OPT_SPACE}#{LAZY_END_HTML_START})^[ \t]*\S.*\n)*)*/
 
       # Parse the indented codeblock at the current location.
       def parse_codeblock
@@ -31,14 +31,14 @@ module Kramdown
 
 
       FENCED_CODEBLOCK_START = /^~{3,}/
-      FENCED_CODEBLOCK_MATCH = /^(~{3,})\s*?(\w+)?\s*?\n(.*?)^\1~*\s*?\n/m
+      FENCED_CODEBLOCK_MATCH = /^((~){3,})\s*?(\w+)?\s*?\n(.*?)^\1\2*\s*?\n/m
 
       # Parse the fenced codeblock at the current location.
       def parse_codeblock_fenced
-        if @src.check(FENCED_CODEBLOCK_MATCH)
+        if @src.check(self.class::FENCED_CODEBLOCK_MATCH)
           @src.pos += @src.matched_size
-          el = new_block_el(:codeblock, @src[3])
-          lang = @src[2].to_s.strip
+          el = new_block_el(:codeblock, @src[4])
+          lang = @src[3].to_s.strip
           el.attr['class'] = "language-#{lang}" unless lang.empty?
           @tree.children << el
           true

@@ -48,6 +48,7 @@ module Kramdown
         super
         @footnote_counter = @footnote_start = @options[:footnote_nr]
         @footnotes = []
+        @footnotes_by_name = {}
         @toc = []
         @toc_code = nil
         @indent = 2
@@ -119,7 +120,7 @@ module Kramdown
       end
 
       def convert_hr(el, indent)
-        "#{' '*indent}<hr />\n"
+        "#{' '*indent}<hr#{html_attributes(el.attr)} />\n"
       end
 
       def convert_ul(el, indent)
@@ -242,10 +243,17 @@ module Kramdown
       end
 
       def convert_footnote(el, indent)
-        number = @footnote_counter
-        @footnote_counter += 1
-        @footnotes << [el.options[:name], el.value]
-        "<sup id=\"fnref:#{el.options[:name]}\"><a href=\"#fn:#{el.options[:name]}\" class=\"footnote\">#{number}</a></sup>"
+        repeat = ''
+        if (footnote = @footnotes_by_name[el.options[:name]])
+          number = footnote[2]
+          repeat = ":#{footnote[3] += 1}"
+        else
+          number = @footnote_counter
+          @footnote_counter += 1
+          @footnotes << [el.options[:name], el.value, number, 0]
+          @footnotes_by_name[el.options[:name]] = @footnotes.last
+        end
+        "<sup id=\"fnref:#{el.options[:name]}#{repeat}\"><a href=\"#fn:#{el.options[:name]}\" class=\"footnote\">#{number}</a></sup>"
       end
 
       def convert_raw(el, indent)
@@ -416,22 +424,29 @@ module Kramdown
         result
       end
 
+      FOOTNOTE_BACKLINK_FMT = "%s<a href=\"#fnref:%s\" class=\"reversefootnote\">%s</a>"
+
       # Return a HTML ordered list with the footnote content for the used footnotes.
       def footnote_content
         ol = Element.new(:ol)
         ol.attr['start'] = @footnote_start if @footnote_start != 1
-        @footnotes.each do |name, data|
+        @footnotes.each do |name, data, _, repeat|
           li = Element.new(:li, nil, {'id' => "fn:#{name}"})
           li.children = Marshal.load(Marshal.dump(data.children))
           ol.children << li
 
-          ref = Element.new(:raw, "<a href=\"#fnref:#{name}\" class=\"reversefootnote\">&#8617;</a>")
           if li.children.last.type == :p
             para = li.children.last
+            insert_space = true
           else
             li.children << (para = Element.new(:p))
+            insert_space = false
           end
-          para.children << ref
+
+          para.children << Element.new(:raw, FOOTNOTE_BACKLINK_FMT % [insert_space ? ' ' : '', name, "&#8617;"])
+          (1..repeat).each do |index|
+            para.children << Element.new(:raw, FOOTNOTE_BACKLINK_FMT % [" ", "#{name}:#{index}", "&#8617;<sup>#{index+1}</sup>"])
+          end
         end
         (ol.children.empty? ? '' : format_as_indented_block_html('div', {:class => "footnotes"}, convert(ol, 2), 0))
       end
