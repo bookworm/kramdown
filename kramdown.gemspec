@@ -28,7 +28,7 @@ EOF
 Gem::Specification.new do |s|
   #### Basic information
   s.name = 'kramdown'
-  s.version = '1.1.0'
+  s.version = '1.1.1'
   s.summary = SUMMARY
   s.description = DESCRIPTION
   s.license = 'MIT'
