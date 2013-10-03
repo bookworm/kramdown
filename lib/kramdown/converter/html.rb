@@ -279,15 +279,16 @@ module Kramdown
         convert_codeblock(el, indent)
       end
 
-      def convert_infoblock(el, indent)
-        result = <<-eos <table class="information sidebarish">
-          <tbody>
-            <tr>
-              <td class="sidebar-icon"><img alt="information" class="sidebar-image" src="../Images/leanpub_information.png" /></td>
-              <td>
-        eos
+      def convert_textblock(el, indent)
+        result = "<table class='#{el.attr["textblock_type"]} sidebarish textblock'>"
+        result << "<tbody> <tr>"
+
+        result << "<td class='textblock-sidebar-icon'><img alt='#{el.attr["textblock_type"]}' class='sidebar-image' src='images/#{el.attr['textblock_type']}-icon.png' /></td>"
+        result << "<td>"
 
         result << inner(el, indent)
+
+        el.attr.delete("textblock_type")
 
         result << <<-eos      
                 </td>

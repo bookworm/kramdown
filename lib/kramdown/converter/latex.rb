@@ -223,7 +223,7 @@ module Kramdown
         eos
       end
 
-      def convert_infoblock(el, opts)
+      def convert_textblock(el, opts)
         @data[:packages] << 'notes' unless @data[:packages].include?('notes') # Add the package
         result = '\\begin{informationnote}'
 
