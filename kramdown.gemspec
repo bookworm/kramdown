@@ -1,7 +1,7 @@
 #!/usr/bin/env gem build
 # encoding: utf-8
-$:.push File.expand_path("lib", __FILE__)
-require File.expand_path("lib/kramdown/version.rb", __FILE__)
+$:.push File.expand_path("../lib", __FILE__)
+require File.expand_path("../lib/kramdown/version.rb", __FILE__)
 require 'rake'
 
 PKG_FILES = FileList.new([
